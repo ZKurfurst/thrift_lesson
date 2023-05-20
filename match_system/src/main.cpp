@@ -7,13 +7,51 @@
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 #include<iostream>
+#include<thread>
+#include<queue>
+#include<mutex>//锁
+#include<condition_variable>//条件变量，对锁进行封装
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
-
 using namespace  ::match_service;
 using namespace std;
+struct Task{
+     User user;
+     string type;
+};
+struct MessageQueue{
+    queue<Task> q;
+    mutex m;
+    condition_variable cv;
+}message_queue;
+class Pool{
+    public:
+        void add(User user){
+             users.push_back(user);
+        }
+        void remove(User user){
+             for(uint32_t i=0;i<users.size();i++){
+                if(users[i].id==user.id){
+                    users.erase(users.begin()+i);
+                    break;
+                }
+             }
+        }
+        void match(){
+            while(users.size()>1){
+                auto a=users[0],b=users[1];
+                users.erase(users.begin());
+                users.erase(users.begin());
+            }
+        }
+        void save_result(int a,int b){
+            printf("Match result:%d %d\n",a,b);
+        }
+    private:
+        vector<User> users;
+}pool;
 class MatchHandler : virtual public MatchIf {
     public:
         MatchHandler() {
@@ -23,16 +61,42 @@ class MatchHandler : virtual public MatchIf {
         int32_t add_user(const User& user, const std::string& info) {
             // Your implementation goes here
             printf("add_user\n");
+            unique_lock<mutex> lck(message_queue.m);
+            message_queue.q.push({user,"add"});
+            message_queue.cv.notify_all();//唤醒线程
             return 0;
         }
 
         int32_t remove_user(const User& user, const std::string& info) {
             // Your implementation goes here
             printf("remove_user\n");
+            unique_lock<mutex> lck(message_queue.m);
+            message_queue.q.push({user,"remove"});
+            message_queue.cv.notify_all();
             return 0;
         }
 
 };
+//消费者模型
+void consume_task()
+{
+    while(true){
+        unique_lock<mutex> lck(message_queue.m);
+        if(message_queue.q.empty()){
+            message_queue.cv.wait(lck);//wait会释放锁
+        }else{
+            auto task=message_queue.q.front();
+            message_queue.q.pop();
+            lck.unlock();
+            //do task
+            if(task.type=="add")
+                pool.add(task.user);
+            else if(task.type=="remove")
+                pool.remove(task.user);
+            pool.match();
+        }
+    }
+}
 
 int main(int argc, char **argv) {
     int port = 9090;
@@ -44,6 +108,8 @@ int main(int argc, char **argv) {
 
     TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
     cout<<1111<<endl;
+    //开启线程
+    thread matching_thread(consume_task);
     server.serve();
 
     return 0;
