@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
 
 	cout << "Start Match Server" << endl;
 
-	thread matching_thread(consume_task);//开启多线程
+	thread matching_thread(consume_task);
 
 	server.serve();
 	return 0;
