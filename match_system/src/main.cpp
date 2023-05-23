@@ -193,7 +193,7 @@ void consume_task()
 			// message_queue.cv.wait(lck);
 			lck.unlock();
 			pool.match();
-			sleep(1);
+			sleep(1);//每隔1秒扫描一遍，看是否有任务需要执行
 		}
 		else
 		{
@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
 
 	cout << "Start Match Server" << endl;
 
-	thread matching_thread(consume_task);
+	thread matching_thread(consume_task);//开启多线程
 
 	server.serve();
 	return 0;
