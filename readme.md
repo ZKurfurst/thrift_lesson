@@ -12,7 +12,7 @@
 - 构建save.thrift远程通信接口
 - 在match_system中用命令thrift -r --gen cpp ../../thrift/save.thrift创建通信所需接口，删除创建的服务端，参照https://thrift.apache.org/tutorial/cpp.html实现多线程的保存数据客户端，调用远程接口save_data实现保存数据
 ### 三、具体细节
-- 编译C++命令：g++ -c <filename>.cpp
+- 编译C++命令：g++ -c \<filename\>.cpp
 - 链接C++命令：g++ *.o -o main -需要的库文件，本项目为g++ *o -o main -lthrift -pthread
-- 运行C++代码：./<链接的文件名>  运行python代码：python3 <filename>
+- 运行C++代码：./<链接的文件名>  运行python代码：python3 \<filename\>
 - 匹配规则：每次尝试匹配时将所有用户的匹配次数wt+1，遍历每个用户，如果两个用户的wt*50>=他们的分数之差，则匹配成功
