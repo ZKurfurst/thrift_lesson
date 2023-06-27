@@ -1,6 +1,6 @@
 ### 一、项目描述
 #### 游戏匹配服务
-![image](https://github.com/ZKurfurst/thrift_lesson/assets/105918870/bbd7008c-1bb2-4e1e-834c-1d79ac60a711)
+![image](https://github.com/ZKurfurst/thrift_lesson/blob/master/picture/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20230627153208.png)
 - 服务共分为三部分：game、match_system、save_server
 - game是用python实现的匹配客户端，可供操作有添加用户和删除用户，具体的操作实现需要调用Match_server
 - match_system由两部分组成，分别为match_server和save_client，match_server为匹配的服务端，用于接收match_client的操作，并将用户添加到用户池,当用户池的数量>=2时开始匹配，匹配规则后面会说明
